@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+
 using Forcura.NPPES;
 using Forcura.NPPES.Models;
+
+using Microsoft.AspNetCore.Mvc;
 namespace NpiRelay.Controllers
 {
-    [Route("[controller]")]
+	[Route("api")]
     [ApiController]
     public class SearchByNameController : ControllerBase
     {
 		[HttpGet]
+		[Route("search-by-name")]
 		public async Task<IEnumerable<NPPESResult>> Get(string firstName, string lastName)
 		{
 			var response = await NPPESApiClient.SearchAsync(new NPPESRequest
