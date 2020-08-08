@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NpiRelay.Services;
 
 namespace NpiRelay
 {
@@ -19,6 +20,9 @@ namespace NpiRelay
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddControllers();
+
+			services.Configure<PdfConfig>(Configuration.GetSection("PdfConfig"));
+			services.AddTransient<IPdfService, PdfService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
