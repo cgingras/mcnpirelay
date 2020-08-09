@@ -11,5 +11,10 @@
     <PackageReference Include="Syncfusion.HtmlToPdfConverter.QtWebKit.Net.Core" Version="18.2.0.44" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Pdf\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
