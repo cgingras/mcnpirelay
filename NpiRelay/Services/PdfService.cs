@@ -5,6 +5,7 @@ using Syncfusion.Pdf;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,13 +16,16 @@ namespace NpiRelay.Services
 	{
 		private readonly IWebHostEnvironment _webHostEnvironment;
 		private readonly PdfConfig _config;
+		private readonly HttpClient _httpClient;
 
 		public PdfService(
 			IWebHostEnvironment webHostEnvironment,
-			IOptions<PdfConfig> config)
+			IOptions<PdfConfig> config,
+			HttpClient httpClient)
 		{
 			_webHostEnvironment = webHostEnvironment;
 			_config = config.Value;
+			_httpClient = httpClient;
 		}
 
 		private string GetWebKitPath()
@@ -72,11 +76,28 @@ namespace NpiRelay.Services
 
 			return stream;
 		}
+
+		public async Task<MemoryStream> DownloadFileAsync(string fileUrl)
+		{
+			var fileContent = await _httpClient.GetByteArrayAsync(fileUrl);
+
+			if (fileContent != null)
+			{
+				var memoryStream = new MemoryStream(fileContent);
+				memoryStream.Seek(0, SeekOrigin.Begin);
+
+				return memoryStream;
+			}
+
+			return null;
+		}
 	}
 
 	public interface IPdfService
 	{
 		MemoryStream ConvertHtml(string htmlText);
+
+		Task<MemoryStream> DownloadFileAsync(string fileUrl);
 	}
 
 	public class PdfConfig

@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NpiRelay.Services;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace NpiRelay
 {
@@ -15,14 +17,33 @@ namespace NpiRelay
 		}
 
 		public IConfiguration Configuration { get; }
+		public const string PdfViewerPolicy = "MyPolicy";
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddControllers();
+			services.AddControllers()
+				.AddNewtonsoftJson(options =>
+			{
+				// Use the default property (Pascal) casing
+				options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+			});
+
+			services.AddMemoryCache();
+
+			services.AddCors(options =>
+			{
+				options.AddPolicy(PdfViewerPolicy,
+				builder =>
+				{
+					builder.AllowAnyOrigin()
+					  .AllowAnyMethod()
+					  .AllowAnyHeader();
+				});
+			});
 
 			services.Configure<PdfConfig>(Configuration.GetSection("PdfConfig"));
-			services.AddTransient<IPdfService, PdfService>();
+			services.AddHttpClient<IPdfService, PdfService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,6 +59,8 @@ namespace NpiRelay
 			app.UseRouting();
 
 			app.UseAuthorization();
+
+			app.UseCors(PdfViewerPolicy);
 
 			app.UseEndpoints(endpoints =>
 			{
