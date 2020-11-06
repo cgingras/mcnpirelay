@@ -79,14 +79,17 @@ namespace NpiRelay.Services
 
 		public async Task<MemoryStream> DownloadFileAsync(string fileUrl)
 		{
-			var fileContent = await _httpClient.GetByteArrayAsync(fileUrl);
-
-			if (fileContent != null)
+			if (fileUrl?.StartsWith(_config.BaseDownloadUrl) == true)
 			{
-				var memoryStream = new MemoryStream(fileContent);
-				memoryStream.Seek(0, SeekOrigin.Begin);
+				var fileContent = await _httpClient.GetByteArrayAsync(fileUrl);
 
-				return memoryStream;
+				if (fileContent != null)
+				{
+					var memoryStream = new MemoryStream(fileContent);
+					memoryStream.Seek(0, SeekOrigin.Begin);
+
+					return memoryStream;
+				}
 			}
 
 			return null;
@@ -105,5 +108,6 @@ namespace NpiRelay.Services
 		public string WebKitWindowsPath { get; set; }
 		public string WebKitOsxPath { get; set; }
 		public string WebKitLinuxPath { get; set; }
+		public string BaseDownloadUrl { get; set; }
 	}
 }
