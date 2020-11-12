@@ -49,6 +49,9 @@ namespace NpiRelay
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			//Register Syncfusion license
+			Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(Configuration["PdfViewerLicenceKey"]);
+
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
