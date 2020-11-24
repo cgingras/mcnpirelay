@@ -1,5 +1,6 @@
 ﻿using System.Net;
-
+using System.Web;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,10 +30,10 @@ namespace NpiRelay.Controllers
 				},
 				Info = new
 				{
-					SearchDatabaseByNpi = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/search-db-by-npi-number?npi="),
-					SearchNPPESApiByNpi = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/search-by-npi-number?npi="),
-					SearchDatabaseByFirstAndLastName = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/search-db-by-name?firstName=&lastName=&state="),
-					SearchNPPESApiByFirstAndLastName = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/search-by-name?firstName=&lastName=")
+					SearchDatabaseByNpi = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-db-by-npi-number", new QueryString("?npi=")),
+					SearchNPPESApiByNpi = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-by-npi-number", new QueryString("?npi=")),
+					SearchDatabaseByFirstAndLastName = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-db-by-name", new QueryString("?firstName=&lastName=&state=")),
+					SearchNPPESApiByFirstAndLastName = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-by-name", new QueryString("?firstName=&lastName="))
 				},
 				Tuning = new
 				{
