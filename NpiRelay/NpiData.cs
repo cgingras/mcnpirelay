@@ -6,6 +6,8 @@ namespace NpiRelay
 	{
 		public string NPI { get; set; }
 
+		public short? EntityTypeCode { get; set; }
+
 		public string EmployerIdentificationNumber { get; set; }
 
 		public string ProviderOrganizationName { get; set; }
@@ -21,6 +23,8 @@ namespace NpiRelay
 		public string ProviderNameSuffixText { get; set; }
 
 		public string ProviderCredentialText { get; set; }
+
+		public string ProviderGenderCode { get; set; }
 
 		public string ProviderOtherOrganizationName { get; set; }
 
