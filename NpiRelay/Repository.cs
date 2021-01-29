@@ -58,5 +58,46 @@ namespace NpiRelay
 				return null;
 			}
 		}
+
+		public async Task<IEnumerable<CmsData>> SearchCms(string npi, string firstName = null, string lastName = null, string state = null)
+		{
+			try
+			{
+				using (SqlConnection conn = new SqlConnection(ConnectionString))
+				{
+					var sql = "dbo.SearchCms";
+					var parameters = new DynamicParameters();
+
+					if (!string.IsNullOrEmpty(npi))
+					{
+						parameters.Add("@NpiNumber", npi);
+					}
+
+					if (!string.IsNullOrEmpty(firstName))
+					{
+						parameters.Add("@FirstName", firstName);
+					}
+
+					if (!string.IsNullOrEmpty(lastName))
+					{
+						parameters.Add("@LastName", lastName);
+					}
+
+					if (!string.IsNullOrEmpty(state))
+					{
+						parameters.Add("@State", state);
+					}
+
+					var result = await conn.QueryAsync<CmsData>(sql, parameters, commandType: CommandType.StoredProcedure);
+
+					return result;
+				}
+			}
+			catch
+			{
+				//TODO: Do something with Exception
+				return null;
+			}
+		}
 	}
 }

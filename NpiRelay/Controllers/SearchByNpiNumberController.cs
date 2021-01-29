@@ -38,5 +38,12 @@ namespace NpiRelay.Controllers
 		{
 			return await _repository.SearchNpi(npi);
 		}
+
+		[HttpGet]
+		[Route("search-cms-db-by-npi-number")]
+		public async Task<IEnumerable<CmsData>> GetCmsFromDb(string npi)
+		{
+			return await _repository.SearchCms(npi);
+		}
 	}
 }

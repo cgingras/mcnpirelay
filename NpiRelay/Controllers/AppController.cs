@@ -31,8 +31,10 @@ namespace NpiRelay.Controllers
 				Info = new
 				{
 					SearchDatabaseByNpi = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-db-by-npi-number", new QueryString("?npi=")),
-					SearchNPPESApiByNpi = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-by-npi-number", new QueryString("?npi=")),
 					SearchDatabaseByFirstAndLastName = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-db-by-name", new QueryString("?firstName=&lastName=&state=")),
+					SearchCmsDatabaseByNpi = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-cms-db-by-npi-number", new QueryString("?npi=")),
+					SearchCmsDatabaseByFirstAndLastName = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-cms-db-by-name", new QueryString("?firstName=&lastName=&state=")),
+					SearchNPPESApiByNpi = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-by-npi-number", new QueryString("?npi=")),
 					SearchNPPESApiByFirstAndLastName = UriHelper.BuildAbsolute(Request.Scheme, Request.Host, Request.PathBase, "/api/search-by-name", new QueryString("?firstName=&lastName="))
 				},
 				Tuning = new
