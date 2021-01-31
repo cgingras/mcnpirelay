@@ -5,7 +5,8 @@ using Forcura.NPPES;
 using Forcura.NPPES.Models;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+
+using NpiRelay.Services;
 
 namespace NpiRelay.Controllers
 {
@@ -13,11 +14,11 @@ namespace NpiRelay.Controllers
     [ApiController]
     public class SearchByNameController : ControllerBase
     {
-	    private readonly Repository _repository;
+	    private readonly INpiService _service;
 
-	    public SearchByNameController(IConfiguration configuration)
+	    public SearchByNameController(INpiService service)
 	    {
-		    _repository = new Repository(configuration);
+		    _service = service;
 	    }
 
 		[HttpGet]
@@ -37,14 +38,14 @@ namespace NpiRelay.Controllers
 		[Route("search-db-by-name")]
 		public async Task<IEnumerable<NpiData>> GetFromDb(string firstName, string lastName, string state)
 		{
-			return await _repository.SearchNpi(null, firstName, lastName, state);
+			return await _service.SearchNpiByName(firstName, lastName, state);
 		}
 
 		[HttpGet]
 		[Route("search-cms-db-by-name")]
 		public async Task<IEnumerable<CmsData>> GetCmsFromDb(string firstName, string lastName, string state)
 		{
-			return await _repository.SearchCms(null, firstName, lastName, state);
+			return await _service.SearchCmsByName(firstName, lastName, state);
 		}
 	}
 }

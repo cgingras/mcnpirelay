@@ -9,7 +9,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace NpiRelay
 {
-	public class Repository
+	public interface IRepository
+	{
+		Task<IEnumerable<NpiData>> SearchNpi(string npi, string firstName = null, string lastName = null, string state = null);
+		Task<IEnumerable<CmsData>> SearchCms(string npi, string firstName = null, string lastName = null, string state = null);
+	}
+
+	public class Repository : IRepository
 	{
 		public string ConnectionString { get; set; }
 
@@ -22,35 +28,33 @@ namespace NpiRelay
 		{
 			try
 			{
-				using (SqlConnection conn = new SqlConnection(ConnectionString))
+				await using SqlConnection conn = new SqlConnection(ConnectionString);
+				var sql = "dbo.SearchNpi";
+				var parameters = new DynamicParameters();
+
+				if (!string.IsNullOrEmpty(npi))
 				{
-					var sql = "dbo.SearchNpi";
-					var parameters = new DynamicParameters();
-
-					if (!string.IsNullOrEmpty(npi))
-					{
-						parameters.Add("@NpiNumber", npi);
-					}
-
-					if (!string.IsNullOrEmpty(firstName))
-					{
-						parameters.Add("@FirstName", firstName);
-					}
-
-					if (!string.IsNullOrEmpty(lastName))
-					{
-						parameters.Add("@LastName", lastName);
-					}
-
-					if (!string.IsNullOrEmpty(state))
-					{
-						parameters.Add("@State", state);
-					}
-
-					var result = await conn.QueryAsync<NpiData>(sql, parameters, commandType: CommandType.StoredProcedure);
-
-					return result;
+					parameters.Add("@NpiNumber", npi);
 				}
+
+				if (!string.IsNullOrEmpty(firstName))
+				{
+					parameters.Add("@FirstName", firstName);
+				}
+
+				if (!string.IsNullOrEmpty(lastName))
+				{
+					parameters.Add("@LastName", lastName);
+				}
+
+				if (!string.IsNullOrEmpty(state))
+				{
+					parameters.Add("@State", state);
+				}
+
+				var result = await conn.QueryAsync<NpiData>(sql, parameters, commandType: CommandType.StoredProcedure);
+
+				return result;
 			}
 			catch
 			{

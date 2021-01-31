@@ -71,5 +71,7 @@ namespace NpiRelay
 		public string ProviderLicenseNumber_2 { get; set; }
 
 		public string ProviderLicenseNumberStateCode_2 { get; set; }
+
+		public string ProviderType { get; set; }
 	}
 }

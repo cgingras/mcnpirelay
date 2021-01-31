@@ -3,9 +3,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NpiRelay.Services;
-using Newtonsoft.Json;
+
 using Newtonsoft.Json.Serialization;
+
+using NpiRelay.Services;
 
 namespace NpiRelay
 {
@@ -28,6 +29,9 @@ namespace NpiRelay
 				// Use the default property (Pascal) casing
 				options.SerializerSettings.ContractResolver = new DefaultContractResolver();
 			});
+
+			services.AddScoped<IRepository>(service => new Repository(Configuration));
+			services.AddScoped<INpiService, NpiService>();
 
 			services.AddMemoryCache();
 
