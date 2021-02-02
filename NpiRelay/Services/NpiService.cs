@@ -56,6 +56,11 @@ namespace NpiRelay.Services
 
 		private void MergeNpiAndCms(IEnumerable<NpiData> npiSet, IEnumerable<CmsData> cmsSet)
 		{
+			if (npiSet == null || cmsSet == null)
+			{
+				return;
+			}
+
 			foreach (var npi in npiSet)
 			{
 				foreach (var cms in cmsSet)
