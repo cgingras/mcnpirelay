@@ -60,17 +60,11 @@ namespace NpiRelay
 
 		public DateTime? LastUpdateDate { get; set; }
 
-		public string HealthcareProviderTaxonomyCode_1 { get; set; }
+		public string HealthcareProviderTaxonomyCode { get; set; }
 
-		public string ProviderLicenseNumber_1 { get; set; }
+		public string ProviderLicenseNumber { get; set; }
 
-		public string ProviderLicenseNumberStateCode_1 { get; set; }
-
-		public string HealthcareProviderTaxonomyCode_2 { get; set; }
-
-		public string ProviderLicenseNumber_2 { get; set; }
-
-		public string ProviderLicenseNumberStateCode_2 { get; set; }
+		public string ProviderLicenseNumberStateCode { get; set; }
 
 		public string ProviderType { get; set; }
 	}

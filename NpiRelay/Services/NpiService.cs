@@ -67,9 +67,9 @@ namespace NpiRelay.Services
 				{
 					if (cms.Npi.Equals(npi.NPI, StringComparison.OrdinalIgnoreCase))
 					{
-						npi.HealthcareProviderTaxonomyCode_1 = cms.ProviderTaxonomyCode;
-						npi.ProviderLicenseNumber_1 = cms.LicenseNumber;
-						npi.ProviderLicenseNumberStateCode_1 = cms.LicenseState;
+						npi.HealthcareProviderTaxonomyCode = cms.ProviderTaxonomyCode;
+						npi.ProviderLicenseNumber = cms.LicenseNumber;
+						npi.ProviderLicenseNumberStateCode = cms.LicenseState;
 						npi.ProviderFirstName = cms.ProviderFirstName;
 						npi.ProviderLastName = cms.ProviderLastName;
 						npi.ProviderType = cms.ProviderType;
