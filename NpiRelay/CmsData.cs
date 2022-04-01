@@ -16,6 +16,8 @@ namespace NpiRelay
 
 		public string ProviderTaxonomyCode { get; set; }
 
+		public string ProviderTaxonomyDescription { get; set; }
+
 		public string ProviderType { get; set; }
 
 		public string LicenseState { get; set; }

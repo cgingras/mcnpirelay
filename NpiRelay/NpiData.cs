@@ -62,6 +62,8 @@ namespace NpiRelay
 
 		public string HealthcareProviderTaxonomyCode { get; set; }
 
+		public string HealthcareProviderTaxonomyDescription { get; set; }
+
 		public string ProviderLicenseNumber { get; set; }
 
 		public string ProviderLicenseNumberStateCode { get; set; }
