@@ -414,7 +414,6 @@ VALUES
 ,('207RI0011X', 'Allopathic & Osteopathic Physicians/Internal Medicine, Interventional Cardiology')
 
 GO
-
 ALTER PROCEDURE [dbo].[SearchNpi] @NpiNumber VARCHAR(10) = NULL
 	,@FirstName VARCHAR(50) = NULL
 	,@LastName VARCHAR(50) = NULL
@@ -429,50 +428,44 @@ IF (
 	,'At least one parameter should be passed'
 	,1;
 	SELECT 
-			Id
-			,CreatedAt
-			,UpdatedAt
-			,Npi
-			,EntityTypeCode
-			,EmployerIdentificationNumber
-			,ProviderOrganizationName
-			,ProviderLastName
-			,ProviderFirstName
-			,ProviderMiddleName
-			,ProviderNamePrefixText
-			,ProviderNameSuffixText
-			,ProviderCredentialText
-			,ProviderGenderCode
-			,ProviderOtherOrganizationName
-			,ProviderOtherOrganizationNameTypeCode
-			,ProviderFirstLineBusinessMailingAddress
-			,ProviderSecondLineBusinessMailingAddress
-			,ProviderBusinessMailingAddressCityName
-			,ProviderBusinessMailingAddressStateName
-			,ProviderBusinessMailingAddressPostalCode
-			,ProviderBusinessMailingAddressCountryCode
-			,ProviderBusinessMailingAddressTelephoneNumber
-			,ProviderFirstLineBusinessPracticeLocationAddress
-			,ProviderSecondLineBusinessPracticeLocationAddress
-			,ProviderBusinessPracticeLocationAddressCityName
-			,ProviderBusinessPracticeLocationAddressStateName
-			,ProviderBusinessPracticeLocationAddressPostalCode
-			,ProviderBusinessPracticeLocationAddressCountryCode
-			,ProviderBusinessPracticeLocationAddressTelephoneNumber
-			,LastUpdateDate
-			,HealthcareProviderTaxonomyCode
-			,HealthcareProviderTaxonomyDescription
-			,ProviderLicenseNumber
-			,ProviderLicenseNumberStateCode
+			NpiRecords.Id
+			,NpiRecords.CreatedAt
+			,NpiRecords.UpdatedAt
+			,NpiRecords.Npi
+			,NpiRecords.EntityTypeCode
+			,NpiRecords.EmployerIdentificationNumber
+			,NpiRecords.ProviderOrganizationName
+			,NpiRecords.ProviderLastName
+			,NpiRecords.ProviderFirstName
+			,NpiRecords.ProviderMiddleName
+			,NpiRecords.ProviderNamePrefixText
+			,NpiRecords.ProviderNameSuffixText
+			,NpiRecords.ProviderCredentialText
+			,NpiRecords.ProviderGenderCode
+			,NpiRecords.ProviderOtherOrganizationName
+			,NpiRecords.ProviderOtherOrganizationNameTypeCode
+			,NpiRecords.ProviderFirstLineBusinessMailingAddress
+			,NpiRecords.ProviderSecondLineBusinessMailingAddress
+			,NpiRecords.ProviderBusinessMailingAddressCityName
+			,NpiRecords.ProviderBusinessMailingAddressStateName
+			,NpiRecords.ProviderBusinessMailingAddressPostalCode
+			,NpiRecords.ProviderBusinessMailingAddressCountryCode
+			,NpiRecords.ProviderBusinessMailingAddressTelephoneNumber
+			,NpiRecords.ProviderFirstLineBusinessPracticeLocationAddress
+			,NpiRecords.ProviderSecondLineBusinessPracticeLocationAddress
+			,NpiRecords.ProviderBusinessPracticeLocationAddressCityName
+			,NpiRecords.ProviderBusinessPracticeLocationAddressStateName
+			,NpiRecords.ProviderBusinessPracticeLocationAddressPostalCode
+			,NpiRecords.ProviderBusinessPracticeLocationAddressCountryCode
+			,NpiRecords.ProviderBusinessPracticeLocationAddressTelephoneNumber
+			,NpiRecords.LastUpdateDate
+			,NpiRecords.HealthcareProviderTaxonomyCode
+			,Taxonomy.Description AS HealthcareProviderTaxonomyDescription
+			,NpiRecords.ProviderLicenseNumber
+			,NpiRecords.ProviderLicenseNumberStateCode
 	FROM NpiRecords
-	LEFT OUTER JOIN
-	(
-		SELECT
-				Code,
-				[Description] AS HealthcareProviderTaxonomyDescription
-				FROM Taxonomy
-	) AS T
-	ON T.Code = NpiRecords.HealthcareProviderTaxonomyCode
+	LEFT OUTER JOIN Taxonomy
+		ON Taxonomy.Code = NpiRecords.HealthcareProviderTaxonomyCode
 	WHERE (
 			ProviderFirstName = @FirstName
 			OR @FirstName IS NULL
@@ -507,25 +500,19 @@ IF (
 	,'At least one parameter should be passed'
 	,1;
 	SELECT 
-			Id
-			,CreatedAt
-			,Npi
-			,ProviderFirstName
-			,ProviderLastName
-			,ProviderTaxonomyCode
-			,ProviderTaxonomyDescription
-			,ProviderType
-			,LicenseState
-			,LicenseNumber
+			CmsRecords.Id
+			,CmsRecords.CreatedAt
+			,CmsRecords.Npi
+			,CmsRecords.ProviderFirstName
+			,CmsRecords.ProviderLastName
+			,CmsRecords.ProviderTaxonomyCode
+			,Taxonomy.Description AS ProviderTaxonomyDescription
+			,CmsRecords.ProviderType
+			,CmsRecords.LicenseState
+			,CmsRecords.LicenseNumber
 	FROM CmsRecords
-	LEFT OUTER JOIN
-	(
-		SELECT
-				Code,
-				[Description] AS ProviderTaxonomyDescription
-				FROM Taxonomy
-	) AS T
-	ON T.Code = CmsRecords.ProviderTaxonomyCode
+	LEFT OUTER JOIN Taxonomy
+	ON Taxonomy.Code = CmsRecords.ProviderTaxonomyCode
 	WHERE (
 			ProviderFirstName = @FirstName
 			OR @FirstName IS NULL
