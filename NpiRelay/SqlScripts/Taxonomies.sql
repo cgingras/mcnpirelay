@@ -7,8 +7,6 @@ CREATE TABLE [dbo].[Taxonomy]
 	CONSTRAINT [UX_Taxonomy_Code] UNIQUE ([Code])
 )
 
-
-
 INSERT INTO Taxonomy
 ([Code],[Description])
 VALUES
@@ -26,7 +24,6 @@ VALUES
 ,('204F00000X', 'Allopathic & Osteopathic Physicians/Transplant Surgery')
 ,('208C00000X', 'Allopathic & Osteopathic Physicians/Colon & Rectal Surgery')
 ,('207T00000X', 'Allopathic & Osteopathic Physicians/Neurological Surgery')
-,('204E00000X', 'Allopathic & Osteopathic Physicians/Oral & Maxillofacial Surgery')
 ,('207X00000X', 'Allopathic & Osteopathic Physicians/Orthopaedic Surgery')
 ,('207XS0114X', 'Allopathic & Osteopathic Physicians/Orthopaedic Surgery/Adult Reconstructive Orthopaedic Surgery')
 ,('207XX0004X', 'Allopathic & Osteopathic Physicians/Orthopaedic Surgery/Foot and Ankle Surgery')
@@ -421,13 +418,10 @@ VALUES
 ,('133VN1301X',  'Dietary & Nutritional Service Providers/Dietician, Registered, Nutrition, Oncology')
 ,('133VN1401X',  'Dietary & Nutritional Service Providers/Dietician, Registered, Nutrition, Pediatric Critical Care')
 ,('133VN1501X',  'Dietary & Nutritional Service Providers/Dietician, Registered, Nutrition, Sports Dietetics')
-,('133VN1501X',  'Allopathic & Osteopathic Physicians/Pain Medicine, Pain Medicine')
 ,('156FX1700X',  'Eye and Vision Services Providers, Technician/Technologist, Ocularist')
 ,('163WC3500X',  'Nursing Service Providers, Registered Nurse, Cardiac Rehabilitation')
 ,('174H00000X',  'Other Service Providers, Health Educator')
 ,('204E00000X',  'Allopathic & Osteopathic Physicians/Oral & Maxillofacial Surgery')
-,('204E00000X',  'Allopathic & Osteopathic Physicians/Oral and Maxillofacial Surgery')
-,('204F00000X',  'Allopathic & Osteopathic Physicians/Transplant Surgery')
 ,('207K00000X',  'Allopathic & Osteopathic Physicians/Allergy and Immunology')
 ,('207KA0200X',  'Allopathic & Osteopathic Physicians/Allergy and Immunology/Allergy')
 ,('207KI0005X',  'Allopathic & Osteopathic Physicians/Allergy and Immunology/Clinical & Laboratory Immunology')
@@ -529,9 +523,9 @@ VALUES
 ,('207VX0201X',  'Allopathic & Osteopathic Physicians/Obstetrics & Gynecology, Gynecologic Oncology')
 ,('207VX0201X',  'Allopathic & Osteopathic Physicians/Obstetrics & Gynecology, Gynecologic Oncology')
 ,('207W00000X',  'Allopathic & Osteopathic Physicians/Ophthalmology')
-,('207WX0009X          ',  'Allopathic & Osteopathic Physicians/Ophthalmology, Glaucoma Specialist')
-,('207WX0107X   ',  'Allopathic & Osteopathic Physicians/Ophthalmology, Retina Specialist')
-,('207WX0108X   ',  'Allopathic & Osteopathic Physicians/Ophthalmology, Uveitis and Ocular Inflammatory Disease')
+,('207WX0009X',  'Allopathic & Osteopathic Physicians/Ophthalmology, Glaucoma Specialist')
+,('207WX0107X',  'Allopathic & Osteopathic Physicians/Ophthalmology, Retina Specialist')
+,('207WX0108X',  'Allopathic & Osteopathic Physicians/Ophthalmology, Uveitis and Ocular Inflammatory Disease')
 ,('207WX0109X',  'Allopathic & Osteopathic Physicians/Ophthalmology/Neuro-ophthalmology')
 ,('207WX0110X',  'Allopathic & Osteopathic Physicians/Ophthalmology/Pediatric Ophthalmology and Strabismus Specialist')
 ,('207WX0120X',  'Allopathic & Osteopathic Physicians/Ophthalmology, Cornea and External Diseases Specialist')
