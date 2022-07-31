@@ -82,6 +82,14 @@ namespace MedCompli.Web.Controllers
 			return Content(JsonConvert.SerializeObject(jsonResult));
 		}
 
+		[HttpPost("RenderPdfTexts")]
+		public object RenderPdfTexts(Dictionary<string, string> jsonObject)
+		{
+			PdfRenderer pdfviewer = new PdfRenderer();
+			object result = pdfviewer.GetDocumentText(jsonObject);
+			return (JsonConvert.SerializeObject(result));
+		}
+
 		[HttpPost("RenderThumbnailImages")]
 		//Post action for rendering the ThumbnailImages
 		public IActionResult RenderThumbnailImages([FromBody] Dictionary<string, string> jsonObject)
