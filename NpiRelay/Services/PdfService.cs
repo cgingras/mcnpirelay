@@ -12,102 +12,131 @@ using System.Threading.Tasks;
 
 namespace NpiRelay.Services
 {
-	public class PdfService : IPdfService
-	{
-		private readonly IWebHostEnvironment _webHostEnvironment;
-		private readonly PdfConfig _config;
-		private readonly HttpClient _httpClient;
+    public class PdfService : IPdfService
+    {
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly PdfConfig _config;
+        private readonly HttpClient _httpClient;
 
-		public PdfService(
-			IWebHostEnvironment webHostEnvironment,
-			IOptions<PdfConfig> config,
-			HttpClient httpClient)
-		{
-			_webHostEnvironment = webHostEnvironment;
-			_config = config.Value;
-			_httpClient = httpClient;
-		}
+        private string[] _allowedDownloadUrls;
 
-		private string GetWebKitPath()
-		{
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-			{
-				return Path.Combine(_webHostEnvironment.ContentRootPath, _config.WebKitLinuxPath);
-			}
+        public PdfService(
+            IWebHostEnvironment webHostEnvironment,
+            IOptions<PdfConfig> config,
+            HttpClient httpClient)
+        {
+            _webHostEnvironment = webHostEnvironment;
+            _config = config.Value;
+            _httpClient = httpClient;
 
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-			{
-				return Path.Combine(_webHostEnvironment.ContentRootPath, _config.WebKitOsxPath);
-			}
+            _allowedDownloadUrls = _config.BaseDownloadUrls.Split(";", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        }
 
-			// Defaults to Windows.
-			return Path.Combine(_webHostEnvironment.ContentRootPath, _config.WebKitWindowsPath);
-		}
+        private string GetWebKitPath()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return Path.Combine(_webHostEnvironment.ContentRootPath, _config.WebKitLinuxPath);
+            }
 
-		public MemoryStream ConvertHtml(string htmlText)
-		{
-			HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return Path.Combine(_webHostEnvironment.ContentRootPath, _config.WebKitOsxPath);
+            }
 
-			WebKitConverterSettings settings = new WebKitConverterSettings
-			{
-				EnableJavaScript = false
-			};
+            // Defaults to Windows.
+            return Path.Combine(_webHostEnvironment.ContentRootPath, _config.WebKitWindowsPath);
+        }
 
-			string baseUrl = _webHostEnvironment.ContentRootPath.TrimEnd('/') + "/Temp/HTMLFiles/";
+        public MemoryStream ConvertHtml(string htmlText)
+        {
+            HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
 
-			//Set WebKit path
-			settings.WebKitPath = GetWebKitPath();
+            WebKitConverterSettings settings = new WebKitConverterSettings
+            {
+                EnableJavaScript = false
+            };
 
-			//Assign WebKit settings to HTML converter
-			htmlConverter.ConverterSettings = settings;
+            string baseUrl = _webHostEnvironment.ContentRootPath.TrimEnd('/') + "/Temp/HTMLFiles/";
 
-			//Convert HTML string to PDF
-			PdfDocument document = htmlConverter.Convert(htmlText, baseUrl);
+            //Set WebKit path
+            settings.WebKitPath = GetWebKitPath();
 
-			//Save the document into stream.
-			MemoryStream stream = new MemoryStream();
+            //Assign WebKit settings to HTML converter
+            htmlConverter.ConverterSettings = settings;
 
-			document.Save(stream);
+            //Convert HTML string to PDF
+            PdfDocument document = htmlConverter.Convert(htmlText, baseUrl);
 
-			stream.Position = 0;
+            //Save the document into stream.
+            MemoryStream stream = new MemoryStream();
 
-			//Close the document.
-			document.Close(true);
+            document.Save(stream);
 
-			return stream;
-		}
+            stream.Position = 0;
 
-		public async Task<MemoryStream> DownloadFileAsync(string fileUrl)
-		{
-			if (fileUrl?.StartsWith(_config.BaseDownloadUrl) == true)
-			{
-				var fileContent = await _httpClient.GetByteArrayAsync(fileUrl);
+            //Close the document.
+            document.Close(true);
 
-				if (fileContent != null)
-				{
-					var memoryStream = new MemoryStream(fileContent);
-					memoryStream.Seek(0, SeekOrigin.Begin);
+            return stream;
+        }
 
-					return memoryStream;
-				}
-			}
+        public bool ValidateDownloadUrl(string fileUrl)
+        {
+            if (!string.IsNullOrWhiteSpace(fileUrl))
+            {
+                foreach (var allowedUrl in _allowedDownloadUrls)
+                {
+                    if (fileUrl.StartsWith(allowedUrl, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
 
-			return null;
-		}
-	}
+                // For backward compatibility
+                if (fileUrl.StartsWith(_config.BaseDownloadUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
 
-	public interface IPdfService
-	{
-		MemoryStream ConvertHtml(string htmlText);
+            return false;
+        }
 
-		Task<MemoryStream> DownloadFileAsync(string fileUrl);
-	}
+        public async Task<MemoryStream> DownloadFileAsync(string fileUrl)
+        {
+            if (ValidateDownloadUrl(fileUrl))
+            {
+                var fileContent = await _httpClient.GetByteArrayAsync(fileUrl);
 
-	public class PdfConfig
-	{
-		public string WebKitWindowsPath { get; set; }
-		public string WebKitOsxPath { get; set; }
-		public string WebKitLinuxPath { get; set; }
-		public string BaseDownloadUrl { get; set; }
-	}
+                if (fileContent != null)
+                {
+                    var memoryStream = new MemoryStream(fileContent);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
+
+                    return memoryStream;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    public interface IPdfService
+    {
+        MemoryStream ConvertHtml(string htmlText);
+
+        Task<MemoryStream> DownloadFileAsync(string fileUrl);
+    }
+
+    public class PdfConfig
+    {
+        public string WebKitWindowsPath { get; set; }
+        public string WebKitOsxPath { get; set; }
+        public string WebKitLinuxPath { get; set; }
+
+        // This is for backward compatibility
+        public string BaseDownloadUrl { get; set; }
+        public string BaseDownloadUrls { get; set; }
+    }
 }
