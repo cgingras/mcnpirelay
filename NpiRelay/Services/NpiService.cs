@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NpiRelay.Services
@@ -28,9 +29,7 @@ namespace NpiRelay.Services
 			var cmsResult = await SearchCmsByName(firstName, lastName, state);
 			var npiResult = await _repository.SearchNpi(null, firstName, lastName, state);
 
-			MergeNpiAndCms(npiResult, cmsResult);
-
-			return npiResult;
+			return MergeNpiAndCms(npiResult, cmsResult);
 		}
 
 		public async Task<IEnumerable<CmsData>> SearchCmsByName(string firstName, string lastName, string state)
@@ -43,9 +42,7 @@ namespace NpiRelay.Services
 			var cmsResult = await SearchCmsByNumber(npi);
 			var npiResult = await _repository.SearchNpi(npi);
 
-			MergeNpiAndCms(npiResult, cmsResult);
-
-			return npiResult;
+			return MergeNpiAndCms(npiResult, cmsResult);
 		}
 
 		public async Task<IEnumerable<CmsData>> SearchCmsByNumber(string npi)
@@ -54,30 +51,49 @@ namespace NpiRelay.Services
 		}
 
 
-		private void MergeNpiAndCms(IEnumerable<NpiData> npiSet, IEnumerable<CmsData> cmsSet)
+		private IEnumerable<NpiData> MergeNpiAndCms(IEnumerable<NpiData> npiSet, IEnumerable<CmsData> cmsSet)
 		{
 			if (npiSet == null || cmsSet == null)
 			{
-				return;
+				return npiSet;
 			}
 
-			foreach (var npi in npiSet)
+			if (npiSet.Any())
 			{
-				foreach (var cms in cmsSet)
+				foreach (var npi in npiSet)
 				{
-					if (cms.Npi.Equals(npi.NPI, StringComparison.OrdinalIgnoreCase))
+					foreach (var cms in cmsSet)
 					{
-						npi.HealthcareProviderTaxonomyCode = cms.ProviderTaxonomyCode;
-						npi.ProviderLicenseNumber = cms.LicenseNumber;
-						npi.ProviderLicenseNumberStateCode = cms.LicenseState;
-						npi.ProviderFirstName = cms.ProviderFirstName;
-						npi.ProviderLastName = cms.ProviderLastName;
-						npi.ProviderType = cms.ProviderType;
+						if (cms.Npi.Equals(npi.NPI, StringComparison.OrdinalIgnoreCase))
+						{
+							npi.HealthcareProviderTaxonomyCode = cms.ProviderTaxonomyCode;
+							npi.ProviderLicenseNumber = cms.LicenseNumber;
+							npi.ProviderLicenseNumberStateCode = cms.LicenseState;
+							npi.ProviderFirstName = cms.ProviderFirstName;
+							npi.ProviderLastName = cms.ProviderLastName;
+							npi.ProviderType = cms.ProviderType;
 
-						break;
+							break;
+						}
 					}
 				}
 			}
+			else
+			{
+				npiSet = cmsSet.Select(c => new NpiData
+				{
+					NPI = c.Npi,
+					ProviderFirstName = c.ProviderFirstName,
+					ProviderLastName = c.ProviderLastName,
+					HealthcareProviderTaxonomyCode = c.ProviderTaxonomyCode,
+					HealthcareProviderTaxonomyDescription = c.ProviderTaxonomyDescription,
+					ProviderType = c.ProviderType,
+					ProviderLicenseNumberStateCode = c.LicenseState,
+					ProviderLicenseNumber = c.LicenseNumber
+				});
+			}
+
+			return npiSet;
 		}
 	}
 }
