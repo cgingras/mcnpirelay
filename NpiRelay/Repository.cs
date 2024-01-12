@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Dapper;
@@ -13,6 +14,7 @@ namespace NpiRelay
 	{
 		Task<IEnumerable<NpiData>> SearchNpi(string npi, string firstName = null, string lastName = null, string state = null);
 		Task<IEnumerable<CmsData>> SearchCms(string npi, string firstName = null, string lastName = null, string state = null);
+		Task<OpenPaymentProfile> GetOpenPaymentProfile(string npiNumber);
 	}
 
 	public class Repository : IRepository
@@ -102,6 +104,25 @@ namespace NpiRelay
 				//TODO: Do something with Exception
 				return null;
 			}
+		}
+
+		public async Task<OpenPaymentProfile> GetOpenPaymentProfile(string npiNumber)
+		{
+			using (SqlConnection conn = new SqlConnection(ConnectionString))
+			{
+				var parameters = new DynamicParameters();
+				parameters.Add("@NpiNumber", npiNumber);
+				var sql = @"
+					SELECT
+						Covered_Recipient_NPI AS NpiNumber,
+						Covered_Recipient_Profile_ID AS ProfileId
+					FROM OpenPaymentProfiles
+					WHERE Covered_Recipient_NPI = @NpiNumber";
+
+				var result = await conn.QueryAsync<OpenPaymentProfile>(sql, parameters, commandType: CommandType.Text);
+
+				return result.FirstOrDefault();
+			}  
 		}
 	}
 }

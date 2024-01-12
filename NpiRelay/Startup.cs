@@ -32,6 +32,8 @@ namespace NpiRelay
 
 			services.AddScoped<IRepository>(service => new Repository(Configuration));
 			services.AddScoped<INpiService, NpiService>();
+			services.AddScoped<IOpenPaymentProfileService, OpenPaymentProfileService>();
+
 
 			services.AddMemoryCache();
 
