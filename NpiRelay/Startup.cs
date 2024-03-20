@@ -49,6 +49,7 @@ namespace NpiRelay
 			});
 
 			services.Configure<PdfConfig>(Configuration.GetSection("PdfConfig"));
+			services.Configure<NpiRegistry>(Configuration.GetSection("NpiRegistry"));
 			services.AddHttpClient<IPdfService, PdfService>();
 		}
 
