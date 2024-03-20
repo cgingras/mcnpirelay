@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace NpiRelay.Services
@@ -24,15 +25,18 @@ namespace NpiRelay.Services
 		private readonly IRepository _repository;
 		private readonly NpiRegistry _config;
 		private readonly HttpClient _httpClient;
+		private readonly ILogger _logger;
 
 		public NpiService(
 			IRepository repository, 
 			IOptions<NpiRegistry> config,
-			HttpClient httpClient)
+			HttpClient httpClient,
+			ILoggerFactory loggerFactory)
 		{
 			_repository = repository;
 			_config = config.Value;
 			_httpClient = httpClient;
+			_logger = loggerFactory.CreateLogger<NpiService>();
 		}
 
 
@@ -56,15 +60,15 @@ namespace NpiRelay.Services
                 }
                 if (!string.IsNullOrWhiteSpace(firstName))
                 {
-                    conditions.Add($"first_name={firstName}");
+                    conditions.Add($"first_name={Uri.EscapeDataString(firstName)}");
                 }
                 if (!string.IsNullOrWhiteSpace(lastName))
                 {
-                    conditions.Add($"last_name={lastName}");
+                    conditions.Add($"last_name={Uri.EscapeDataString(lastName)}");
                 }
                 if (!string.IsNullOrWhiteSpace(state))
                 {
-                    conditions.Add($"state={state}");
+                    conditions.Add($"state={Uri.EscapeDataString(state)}");
                 }
 
 				var route = $"{_config.ApiUrl}{_config.ApiVersion}&{string.Join("&", conditions)}";
@@ -82,56 +86,65 @@ namespace NpiRelay.Services
 
 					var nppesResult = JsonConvert.DeserializeObject<NppesResults>(json);
 					
-					var npiData = new List<NpiData>();
-
-					foreach (var item in nppesResult.Results)
+					if(nppesResult?.Results?.Count > 0)
 					{
-						var mailingAddress = item.Addresses.Where(i => i.Address_purpose == "MAILING").FirstOrDefault();
-						var locationAddress = item.Addresses.Where(i => i.Address_purpose == "LOCATION").FirstOrDefault();
-						var taxonomy = item.Taxonomies.Where(i => i.Primary == true).FirstOrDefault();
-						var otherName = item.Other_names.FirstOrDefault();
-						var identifier = item.Identifiers.FirstOrDefault();
+						var npiData = new List<NpiData>();
 
-						npiData.Add(new NpiData{
-							NPI = item.Number,
-							ProviderType = item.Enumeration_type,
-							EmployerIdentificationNumber = identifier?.Identifier,
-							LastUpdateDate = item.Basic?.Last_updated,
-							ProviderFirstName = item.Basic?.First_name,
-							ProviderLastName = item.Basic?.Last_name,
-							ProviderMiddleName = item.Basic?.Middle_name,
-							ProviderCredentialText = item.Basic?.Credential,
-							ProviderNamePrefixText = item.Basic?.Name_prefix,
-							ProviderNameSuffixText = item.Basic?.Name_suffix,
-							ProviderGenderCode = item.Basic?.Gender,
-							HealthcareProviderTaxonomyCode = taxonomy?.Code,
-							HealthcareProviderTaxonomyDescription = taxonomy?.Desc,
-							ProviderLicenseNumber = taxonomy?.License,
-							ProviderLicenseNumberStateCode  = taxonomy?.State,
-							ProviderFirstLineBusinessMailingAddress = mailingAddress?.Address_1,
-							ProviderSecondLineBusinessMailingAddress = mailingAddress?.Address_2,
-							ProviderBusinessMailingAddressCityName = mailingAddress?.City,
-							ProviderBusinessMailingAddressStateName = mailingAddress?.State,
-							ProviderBusinessMailingAddressPostalCode = mailingAddress?.Postal_code,
-							ProviderBusinessMailingAddressCountryCode = mailingAddress?.Country_code,
-							ProviderBusinessMailingAddressTelephoneNumber = mailingAddress?.Telephone_number,
-							ProviderFirstLineBusinessPracticeLocationAddress = locationAddress?.Address_1,
-							ProviderSecondLineBusinessPracticeLocationAddress = locationAddress?.Address_2,
-							ProviderBusinessPracticeLocationAddressCityName = locationAddress?.City,
-							ProviderBusinessPracticeLocationAddressStateName = locationAddress?.State,
-							ProviderBusinessPracticeLocationAddressPostalCode = locationAddress?.Postal_code,
-							ProviderBusinessPracticeLocationAddressCountryCode = locationAddress?.Country_code,
-							ProviderBusinessPracticeLocationAddressTelephoneNumber = locationAddress?.Telephone_number
-						});
+						foreach (var item in nppesResult.Results)
+						{
+							var mailingAddress = item.Addresses.Where(i => i.Address_purpose == "MAILING").FirstOrDefault();
+							var locationAddress = item.Addresses.Where(i => i.Address_purpose == "LOCATION").FirstOrDefault();
+							var taxonomy = item.Taxonomies.Where(i => i.Primary == true).FirstOrDefault();
+							var otherName = item.Other_names.FirstOrDefault();
+							var identifier = item.Identifiers.FirstOrDefault();
+
+							npiData.Add(new NpiData{
+								NPI = item.Number,
+								ProviderType = item.Enumeration_type,
+								EmployerIdentificationNumber = identifier?.Identifier,
+								LastUpdateDate = item.Basic?.Last_updated,
+								ProviderFirstName = item.Basic?.First_name,
+								ProviderLastName = item.Basic?.Last_name,
+								ProviderMiddleName = item.Basic?.Middle_name,
+								ProviderCredentialText = item.Basic?.Credential,
+								ProviderNamePrefixText = item.Basic?.Name_prefix,
+								ProviderNameSuffixText = item.Basic?.Name_suffix,
+								ProviderGenderCode = item.Basic?.Gender,
+								HealthcareProviderTaxonomyCode = taxonomy?.Code,
+								HealthcareProviderTaxonomyDescription = taxonomy?.Desc,
+								ProviderLicenseNumber = taxonomy?.License,
+								ProviderLicenseNumberStateCode  = taxonomy?.State,
+								ProviderFirstLineBusinessMailingAddress = mailingAddress?.Address_1,
+								ProviderSecondLineBusinessMailingAddress = mailingAddress?.Address_2,
+								ProviderBusinessMailingAddressCityName = mailingAddress?.City,
+								ProviderBusinessMailingAddressStateName = mailingAddress?.State,
+								ProviderBusinessMailingAddressPostalCode = mailingAddress?.Postal_code,
+								ProviderBusinessMailingAddressCountryCode = mailingAddress?.Country_code,
+								ProviderBusinessMailingAddressTelephoneNumber = mailingAddress?.Telephone_number,
+								ProviderFirstLineBusinessPracticeLocationAddress = locationAddress?.Address_1,
+								ProviderSecondLineBusinessPracticeLocationAddress = locationAddress?.Address_2,
+								ProviderBusinessPracticeLocationAddressCityName = locationAddress?.City,
+								ProviderBusinessPracticeLocationAddressStateName = locationAddress?.State,
+								ProviderBusinessPracticeLocationAddressPostalCode = locationAddress?.Postal_code,
+								ProviderBusinessPracticeLocationAddressCountryCode = locationAddress?.Country_code,
+								ProviderBusinessPracticeLocationAddressTelephoneNumber = locationAddress?.Telephone_number
+							});
+						}
+						
+						return npiData;
 					}
-					
-					return npiData;
+					else
+					{
+						return await _repository.SearchNpi(npi, firstName, lastName, state);
+					}
 				}
 			}
-			catch
-			{
+			catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error when searching in NPPES API.");
+
 				return await _repository.SearchNpi(npi, firstName, lastName, state);
-			}
+            }
 		}
 
 		public async Task<IEnumerable<CmsData>> SearchCmsByName(string firstName, string lastName, string state)
