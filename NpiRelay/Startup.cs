@@ -1,3 +1,4 @@
+using Forcura.NPPES;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +34,7 @@ namespace NpiRelay
 			services.AddScoped<IRepository>(service => new Repository(Configuration));
 			services.AddScoped<INpiService, NpiService>();
 			services.AddScoped<IOpenPaymentProfileService, OpenPaymentProfileService>();
+			services.AddScoped<NPPESApiClient>();
 
 
 			services.AddMemoryCache();

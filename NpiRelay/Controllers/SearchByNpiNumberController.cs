@@ -10,41 +10,43 @@ using NpiRelay.Services;
 
 namespace NpiRelay.Controllers
 {
-	[Route("api")]
-	[ApiController]
-	public class SearchByNpiNumberController : ControllerBase
-	{
-		private readonly INpiService _service;
+    [Route("api")]
+    [ApiController]
+    public class SearchByNpiNumberController : ControllerBase
+    {
+        private readonly INpiService _service;
+        private readonly NPPESApiClient _nppesApiClient;
 
-		public SearchByNpiNumberController(INpiService service)
-		{
-			_service = service;
-		}
+        public SearchByNpiNumberController(INpiService service, NPPESApiClient nppesApiClient)
+        {
+            _service = service;
+            _nppesApiClient = nppesApiClient;
+        }
 
-		[HttpGet]
-		[Route("search-by-npi-number")]
-		public async Task<IEnumerable<NPPESResult>> Get(string npi)
-		{
-			var response = await NPPESApiClient.SearchAsync(new NPPESRequest
-			{
-				Number = npi
-			});
+        [HttpGet]
+        [Route("search-by-npi-number")]
+        public async Task<IEnumerable<NPPESResult>> Get(string npi)
+        {
+            var response = await _nppesApiClient.SearchAsync(new NPPESRequest
+            {
+                Number = npi
+            });
 
-			return response.Results;
-		}
+            return response.Results;
+        }
 
-		[HttpGet]
-		[Route("search-db-by-npi-number")]
-		public async Task<IEnumerable<NpiData>> GetFromDb(string npi)
-		{
-			return await _service.SearchNpiByNumber(npi);
-		}
+        [HttpGet]
+        [Route("search-db-by-npi-number")]
+        public async Task<IEnumerable<NpiData>> GetFromDb(string npi)
+        {
+            return await _service.SearchNpiByNumber(npi);
+        }
 
-		[HttpGet]
-		[Route("search-cms-db-by-npi-number")]
-		public async Task<IEnumerable<CmsData>> GetCmsFromDb(string npi)
-		{
-			return await _service.SearchCmsByNumber(npi);
-		}
-	}
+        [HttpGet]
+        [Route("search-cms-db-by-npi-number")]
+        public async Task<IEnumerable<CmsData>> GetCmsFromDb(string npi)
+        {
+            return await _service.SearchCmsByNumber(npi);
+        }
+    }
 }
