@@ -115,7 +115,7 @@ namespace MedCompli.Web.Controllers
 		public IActionResult ExportAnnotations([FromBody] Dictionary<string, string> jsonObject)
 		{
 			PdfRenderer pdfviewer = new PdfRenderer(_cache);
-			string jsonResult = pdfviewer.ExportAnnotation(jsonObject);
+			string jsonResult = pdfviewer.GetAnnotations(jsonObject);
 			return Content(jsonResult);
 		}
 
