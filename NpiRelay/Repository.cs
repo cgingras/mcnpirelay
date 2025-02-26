@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -6,24 +7,31 @@ using System.Threading.Tasks;
 
 using Dapper;
 
+using MedCompli.Core.Extensions;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+
+using NpiRelay.Context;
 
 namespace NpiRelay
 {
 	public interface IRepository
 	{
 		Task<IEnumerable<NpiData>> SearchNpi(string npi, string firstName = null, string lastName = null, string state = null);
-		Task<IEnumerable<CmsData>> SearchCms(string npi, string firstName = null, string lastName = null, string state = null);
+		Task<IEnumerable<CmsData>> SearchCms(string? npi, string? firstName, string? lastName, string? state, PageInfo pageInfo);
 		Task<OpenPaymentProfile> GetOpenPaymentProfile(string npiNumber);
 	}
 
 	public class Repository : IRepository
 	{
+		private readonly NpiRelayDbContext _context;
 		public string ConnectionString { get; set; }
 
-		public Repository(IConfiguration configuration)
+		public Repository(IConfiguration configuration, NpiRelayDbContext context)
 		{
 			ConnectionString = configuration.GetValue<string>("NpiDatabaseConnectionString");
+			_context = context;
 		}
 
 		public async Task<IEnumerable<NpiData>> SearchNpi(string npi, string firstName = null, string lastName = null, string state = null)
@@ -65,43 +73,44 @@ namespace NpiRelay
 			}
 		}
 
-		public async Task<IEnumerable<CmsData>> SearchCms(string npi, string firstName = null, string lastName = null, string state = null)
+		public async Task<IEnumerable<CmsData>> SearchCms(string? npi, string? firstName, string? lastName, string? state, PageInfo pageInfo)
 		{
+			if (string.IsNullOrEmpty(npi) && string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName) && string.IsNullOrEmpty(state))
+			{
+				throw new ArgumentException("At least one parameter should be passed.");
+			}
+
 			try
 			{
-				using (SqlConnection conn = new SqlConnection(ConnectionString))
-				{
-					var sql = "dbo.SearchCms";
-					var parameters = new DynamicParameters();
+				var query = from cms in _context.CmsRecords
+							join tax in _context.Taxonomy
+							on cms.ProviderTaxonomyCode equals tax.Code into taxJoin
+							from tax in taxJoin.DefaultIfEmpty()
+							where (string.IsNullOrEmpty(npi) || cms.Npi == npi)
+							   && (string.IsNullOrEmpty(firstName) || cms.ProviderFirstName == firstName)
+							   && (string.IsNullOrEmpty(lastName) || cms.ProviderLastName == lastName)
+							   && (string.IsNullOrEmpty(state) || cms.LicenseState == state)
+							select new CmsData
+							{
+								Id = cms.Id,
+								CreatedAt = cms.CreatedAt,
+								Npi = cms.Npi,
+								ProviderFirstName = cms.ProviderFirstName,
+								ProviderLastName = cms.ProviderLastName,
+								ProviderTaxonomyCode = cms.ProviderTaxonomyCode,
+								ProviderTaxonomyDescription = tax != null ? tax.Description : null,
+								ProviderType = cms.ProviderType,
+								LicenseState = cms.LicenseState,
+								LicenseNumber = cms.LicenseNumber
+							};
 
-					if (!string.IsNullOrEmpty(npi))
-					{
-						parameters.Add("@NpiNumber", npi);
-					}
+				pageInfo.TotalItems = await query.CountAsync();
+				pageInfo.TotalPages = (int)Math.Ceiling((double)pageInfo.TotalItems / pageInfo.PageSize);
 
-					if (!string.IsNullOrEmpty(firstName))
-					{
-						parameters.Add("@FirstName", firstName);
-					}
-
-					if (!string.IsNullOrEmpty(lastName))
-					{
-						parameters.Add("@LastName", lastName);
-					}
-
-					if (!string.IsNullOrEmpty(state))
-					{
-						parameters.Add("@State", state);
-					}
-
-					var result = await conn.QueryAsync<CmsData>(sql, parameters, commandType: CommandType.StoredProcedure);
-
-					return result;
-				}
+				return await Task.FromResult(query.Paginate(pageInfo).ToList());
 			}
-			catch
+			catch (Exception ex)
 			{
-				//TODO: Do something with Exception
 				return null;
 			}
 		}

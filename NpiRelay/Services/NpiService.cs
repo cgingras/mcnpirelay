@@ -1,23 +1,24 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Dapper;
+
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 
 namespace NpiRelay.Services
 {
 	public interface INpiService
 	{
-		Task<IEnumerable<NpiData>> SearchNpiByName(string firstName, string lastName, string state);
-		Task<IEnumerable<CmsData>> SearchCmsByName(string firstName, string lastName, string state);
+		Task<IEnumerable<NpiData>> SearchNpiByName(string firstName, string lastName, string state, PageInfo pageInfo);
+		Task<IEnumerable<CmsData>> SearchCmsByName(string firstName, string lastName, string state, PageInfo pageInfo);
 
-		Task<IEnumerable<NpiData>> SearchNpiByNumber(string npi);
-		Task<IEnumerable<CmsData>> SearchCmsByNumber(string npi);
+		Task<IEnumerable<NpiData>> SearchNpiByNumber(string npi, PageInfo pageInfo);
+		Task<IEnumerable<CmsData>> SearchCmsByNumber(string npi, PageInfo pageInfo);
 	}
 
 	public class NpiService : INpiService
@@ -40,15 +41,15 @@ namespace NpiRelay.Services
 		}
 
 
-		public async Task<IEnumerable<NpiData>> SearchNpiByName(string firstName, string lastName, string state)
+		public async Task<IEnumerable<NpiData>> SearchNpiByName(string firstName, string lastName, string state, PageInfo pageInfo)
 		{
-			var cmsResult = await SearchCmsByName(firstName, lastName, state);
-			var npiResult = await this.SearchNpi(null, firstName, lastName, state);
+			var cmsResult = await SearchCmsByName(firstName, lastName, state, pageInfo);
+			var npiResult = await this.SearchNpi(null, pageInfo, firstName, lastName, state);
 
 			return MergeNpiAndCms(npiResult, cmsResult);
 		}
 
-		private async Task<IEnumerable<NpiData>> SearchNpi(string npi, string firstName = null, string lastName = null, string state = null)
+		private async Task<IEnumerable<NpiData>> SearchNpi(string npi, PageInfo pageInfo, string firstName = null, string lastName = null, string state = null)
 		{
 			try
 			{
@@ -70,6 +71,9 @@ namespace NpiRelay.Services
                 {
                     conditions.Add($"state={Uri.EscapeDataString(state)}");
                 }
+
+				conditions.Add($"limit={Uri.EscapeDataString(pageInfo.PageSize.ToString())}");
+				conditions.Add($"skip={Uri.EscapeDataString(((pageInfo.PageNumber - 1) * pageInfo.PageSize).ToString())}");
 
 				var route = $"{_config.ApiUrl}{_config.ApiVersion}&{string.Join("&", conditions)}";
 
@@ -147,22 +151,22 @@ namespace NpiRelay.Services
             }
 		}
 
-		public async Task<IEnumerable<CmsData>> SearchCmsByName(string firstName, string lastName, string state)
+		public async Task<IEnumerable<CmsData>> SearchCmsByName(string firstName, string lastName, string state, PageInfo pageInfo)
 		{
-			return await _repository.SearchCms(null, firstName, lastName, state);
+			return await _repository.SearchCms(null, firstName, lastName, state, pageInfo);
 		}
 
-		public async Task<IEnumerable<NpiData>> SearchNpiByNumber(string npi)
+		public async Task<IEnumerable<NpiData>> SearchNpiByNumber(string npi, PageInfo pageInfo)
 		{
-			var cmsResult = await SearchCmsByNumber(npi);
-			var npiResult = await SearchNpi(npi);
+			var cmsResult = await SearchCmsByNumber(npi, pageInfo);
+			var npiResult = await SearchNpi(npi, pageInfo);
 
 			return MergeNpiAndCms(npiResult, cmsResult);
 		}
 
-		public async Task<IEnumerable<CmsData>> SearchCmsByNumber(string npi)
+		public async Task<IEnumerable<CmsData>> SearchCmsByNumber(string npi, PageInfo pageInfo)
 		{
-			return await _repository.SearchCms(npi);
+			return await _repository.SearchCms(npi, null, null, null, pageInfo);
 		}
 
 

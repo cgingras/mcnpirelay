@@ -37,16 +37,22 @@ namespace NpiRelay.Controllers
 
         [HttpGet]
         [Route("search-db-by-npi-number")]
-        public async Task<IEnumerable<NpiData>> GetFromDb(string npi)
+        public async Task<IEnumerable<NpiData>> GetFromDb(string npi, string pageNumber, string pageSize)
         {
-            return await _service.SearchNpiByNumber(npi);
+            var pageInfo = new PageInfo
+            {
+                PageNumber = int.Parse(pageNumber),
+                PageSize = int.Parse(pageSize)
+            };
+            
+            return await _service.SearchNpiByNumber(npi, pageInfo);
         }
 
         [HttpGet]
         [Route("search-cms-db-by-npi-number")]
-        public async Task<IEnumerable<CmsData>> GetCmsFromDb(string npi)
+        public async Task<IEnumerable<CmsData>> GetCmsFromDb(string npi, PageInfo pageInfo)
         {
-            return await _service.SearchCmsByNumber(npi);
+            return await _service.SearchCmsByNumber(npi, pageInfo);
         }
     }
 }

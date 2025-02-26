@@ -38,16 +38,22 @@ namespace NpiRelay.Controllers
 
         [HttpGet]
         [Route("search-db-by-name")]
-        public async Task<IEnumerable<NpiData>> GetFromDb(string firstName, string lastName, string state)
+        public async Task<IEnumerable<NpiData>> GetFromDb(string firstName, string lastName, string state, string pageNumber, string pageSize)
         {
-            return await _service.SearchNpiByName(firstName, lastName, state);
+            var pageInfo = new PageInfo
+            {
+                PageNumber = int.Parse(pageNumber),
+                PageSize = int.Parse(pageSize)
+            };
+            
+            return await _service.SearchNpiByName(firstName, lastName, state, pageInfo);
         }
 
         [HttpGet]
         [Route("search-cms-db-by-name")]
-        public async Task<IEnumerable<CmsData>> GetCmsFromDb(string firstName, string lastName, string state)
+        public async Task<IEnumerable<CmsData>> GetCmsFromDb(string firstName, string lastName, string state, PageInfo pageInfo)
         {
-            return await _service.SearchCmsByName(firstName, lastName, state);
+            return await _service.SearchCmsByName(firstName, lastName, state, pageInfo);
         }
     }
 }

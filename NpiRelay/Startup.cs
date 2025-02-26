@@ -1,13 +1,17 @@
 using Forcura.NPPES;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Newtonsoft.Json.Serialization;
 
+
 using NpiRelay.Services;
+using NpiRelay.Context;
 
 namespace NpiRelay
 {
@@ -26,16 +30,17 @@ namespace NpiRelay
 		{
 			services.AddControllers()
 				.AddNewtonsoftJson(options =>
-			{
-				// Use the default property (Pascal) casing
-				options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-			});
+				{
+					options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+				});
 
-			services.AddScoped<IRepository>(service => new Repository(Configuration));
+			services.AddDbContext<NpiRelayDbContext>(options => 
+				options.UseSqlServer(Configuration.GetValue<string>("NpiDatabaseConnectionString")));
+
+			services.AddScoped<IRepository, Repository>();
 			services.AddScoped<INpiService, NpiService>();
 			services.AddScoped<IOpenPaymentProfileService, OpenPaymentProfileService>();
 			services.AddScoped<NPPESApiClient>();
-
 
 			services.AddMemoryCache();
 
@@ -45,8 +50,8 @@ namespace NpiRelay
 				builder =>
 				{
 					builder.AllowAnyOrigin()
-					  .AllowAnyMethod()
-					  .AllowAnyHeader();
+					.AllowAnyMethod()
+					.AllowAnyHeader();
 				});
 			});
 
