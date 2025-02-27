@@ -40,20 +40,27 @@ namespace NpiRelay.Controllers
         [Route("search-db-by-name")]
         public async Task<IEnumerable<NpiData>> GetFromDb(string firstName, string lastName, string state, string pageNumber, string pageSize)
         {
-            var pageInfo = new PageInfo
-            {
-                PageNumber = int.Parse(pageNumber),
-                PageSize = int.Parse(pageSize)
-            };
+
+            var pageNumberInt = int.Parse(pageNumber);
+            var pageSizeInt = int.Parse(pageSize);
+
+            pageNumberInt = pageNumberInt > 0 ? pageNumberInt : 1;
+            pageSizeInt = pageSizeInt <= 2000 ? pageSizeInt : 20;
             
-            return await _service.SearchNpiByName(firstName, lastName, state, pageInfo);
+            return await _service.SearchNpiByName(firstName, lastName, state, pageNumberInt, pageSizeInt);
         }
 
         [HttpGet]
         [Route("search-cms-db-by-name")]
-        public async Task<IEnumerable<CmsData>> GetCmsFromDb(string firstName, string lastName, string state, PageInfo pageInfo)
+        public async Task<IEnumerable<CmsData>> GetCmsFromDb(string firstName, string lastName, string state, string pageNumber, string pageSize)
         {
-            return await _service.SearchCmsByName(firstName, lastName, state, pageInfo);
+            var pageNumberInt = int.Parse(pageNumber);
+            var pageSizeInt = int.Parse(pageSize);
+
+            pageNumberInt = pageNumberInt > 0 ? pageNumberInt : 1;
+            pageSizeInt = pageSizeInt <= 2000 ? pageSizeInt : 20;
+
+            return await _service.SearchCmsByName(firstName, lastName, state, pageNumberInt, pageSizeInt);
         }
     }
 }

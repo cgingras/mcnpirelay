@@ -17,7 +17,6 @@
     <PackageReference Include="Syncfusion.HtmlToPdfConverter.QtWebKit.Net.Core" Version="18.2.0.44" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
-    <PackageReference Include="MedCompli.Common" Version="1.0.87" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.13">
       <PrivateAssets>all</PrivateAssets>

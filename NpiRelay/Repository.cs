@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 
 using Dapper;
 
-using MedCompli.Core.Extensions;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -19,7 +17,7 @@ namespace NpiRelay
 	public interface IRepository
 	{
 		Task<IEnumerable<NpiData>> SearchNpi(string npi, string firstName = null, string lastName = null, string state = null);
-		Task<IEnumerable<CmsData>> SearchCms(string? npi, string? firstName, string? lastName, string? state, PageInfo pageInfo);
+		Task<IEnumerable<CmsData>> SearchCms(string? npi, string? firstName, string? lastName, string? state, int pageNumber, int pageSize);
 		Task<OpenPaymentProfile> GetOpenPaymentProfile(string npiNumber);
 	}
 
@@ -73,46 +71,40 @@ namespace NpiRelay
 			}
 		}
 
-		public async Task<IEnumerable<CmsData>> SearchCms(string? npi, string? firstName, string? lastName, string? state, PageInfo pageInfo)
+		public async Task<IEnumerable<CmsData>> SearchCms(string? npi, string? firstName, string? lastName, string? state, int pageNumber, int pageSize)
 		{
 			if (string.IsNullOrEmpty(npi) && string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName) && string.IsNullOrEmpty(state))
 			{
 				throw new ArgumentException("At least one parameter should be passed.");
 			}
 
-			try
-			{
-				var query = from cms in _context.CmsRecords
-							join tax in _context.Taxonomy
-							on cms.ProviderTaxonomyCode equals tax.Code into taxJoin
-							from tax in taxJoin.DefaultIfEmpty()
-							where (string.IsNullOrEmpty(npi) || cms.Npi == npi)
-							   && (string.IsNullOrEmpty(firstName) || cms.ProviderFirstName == firstName)
-							   && (string.IsNullOrEmpty(lastName) || cms.ProviderLastName == lastName)
-							   && (string.IsNullOrEmpty(state) || cms.LicenseState == state)
-							select new CmsData
-							{
-								Id = cms.Id,
-								CreatedAt = cms.CreatedAt,
-								Npi = cms.Npi,
-								ProviderFirstName = cms.ProviderFirstName,
-								ProviderLastName = cms.ProviderLastName,
-								ProviderTaxonomyCode = cms.ProviderTaxonomyCode,
-								ProviderTaxonomyDescription = tax != null ? tax.Description : null,
-								ProviderType = cms.ProviderType,
-								LicenseState = cms.LicenseState,
-								LicenseNumber = cms.LicenseNumber
-							};
+			var query = from cms in _context.CmsRecords
+						join tax in _context.Taxonomy
+						on cms.ProviderTaxonomyCode equals tax.Code into taxJoin
+						from tax in taxJoin.DefaultIfEmpty()
+						where (string.IsNullOrEmpty(npi) || cms.Npi == npi)
+							&& (string.IsNullOrEmpty(firstName) || cms.ProviderFirstName == firstName)
+							&& (string.IsNullOrEmpty(lastName) || cms.ProviderLastName == lastName)
+							&& (string.IsNullOrEmpty(state) || cms.LicenseState == state)
+						select new CmsData
+						{
+							Id = cms.Id,
+							CreatedAt = cms.CreatedAt,
+							Npi = cms.Npi,
+							ProviderFirstName = cms.ProviderFirstName,
+							ProviderLastName = cms.ProviderLastName,
+							ProviderTaxonomyCode = cms.ProviderTaxonomyCode,
+							ProviderTaxonomyDescription = tax != null ? tax.Description : null,
+							ProviderType = cms.ProviderType,
+							LicenseState = cms.LicenseState,
+							LicenseNumber = cms.LicenseNumber
+						};
 
-				pageInfo.TotalItems = await query.CountAsync();
-				pageInfo.TotalPages = (int)Math.Ceiling((double)pageInfo.TotalItems / pageInfo.PageSize);
-
-				return await Task.FromResult(query.Paginate(pageInfo).ToList());
-			}
-			catch (Exception ex)
-			{
-				return null;
-			}
+			return await query
+				.OrderBy(cms => cms.Id)
+				.Skip((pageNumber - 1) * pageSize)
+				.Take(pageSize)
+				.ToListAsync();
 		}
 
 		public async Task<OpenPaymentProfile> GetOpenPaymentProfile(string npiNumber)
