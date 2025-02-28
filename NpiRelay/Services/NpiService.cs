@@ -51,6 +51,9 @@ namespace NpiRelay.Services
 
 		private async Task<IEnumerable<NpiData>> SearchNpi(string npi, int pageNumber, int pageSize, string firstName = null, string lastName = null, string state = null)
 		{
+			pageNumber = pageNumber > 0 ? pageNumber : 1;
+            pageSize = pageSize <= 2000 ? pageSize : 20;
+
 			try
 			{
                 var conditions = new List<string>();
@@ -153,6 +156,9 @@ namespace NpiRelay.Services
 
 		public async Task<IEnumerable<CmsData>> SearchCmsByName(string firstName, string lastName, string state, int pageNumber, int pageSize)
 		{
+			pageNumber = pageNumber > 0 ? pageNumber : 1;
+            pageSize = pageSize <= 2000 ? pageSize : 20;
+
 			return await _repository.SearchCms(null, firstName, lastName, state, pageNumber, pageSize);
 		}
 
@@ -166,6 +172,9 @@ namespace NpiRelay.Services
 
 		public async Task<IEnumerable<CmsData>> SearchCmsByNumber(string npi, int pageNumber, int pageSize)
 		{
+			pageNumber = pageNumber > 0 ? pageNumber : 1;
+            pageSize = pageSize <= 2000 ? pageSize : 20;
+
 			return await _repository.SearchCms(npi, null, null, null, pageNumber, pageSize);
 		}
 
